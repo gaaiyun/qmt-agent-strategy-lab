@@ -48,6 +48,7 @@ python scripts/run_batch_research.py --cache path/to/yahoo_etf_cache.json --work
 | [`examples/qmt_etf_rotation_live.py`](examples/qmt_etf_rotation_live.py) | 风险 ETF/防守腿轮动模板 | 必须在本机 QMT 编译、回测 |
 | [`examples/qmt_multifactor_live.py`](examples/qmt_multifactor_live.py) | ETF 横截面量价多因子模板 | 不是股票基本面多因子；数据字段可得性需确认 |
 | [`scripts/run_batch_research.py`](scripts/run_batch_research.py) | 纯代码、进程并行、多周期研究 | 代理成交模型，不是券商成交 |
+| [`scripts/pure_code_research.py`](scripts/pure_code_research.py) | 严格数据质量、滚动 walk-forward、成本/基准/市场状态和 survivorship 证据 | 缺少点时数据或 OHLC 异常时会 fail-closed |
 | [`scripts/validate_qmt_strategy.py`](scripts/validate_qmt_strategy.py) | AST 语法、入口、订单门控和 quickTrade 检查 | 不能证明没有未来数据或能够成交 |
 | [`examples/etf_universe.json`](examples/etf_universe.json) | broad/style/industry/overseas/commodity 候选池 | 代码、权限、流动性必须在 QMT 中二次核对 |
 
@@ -107,6 +108,7 @@ qmt-agent-strategy-lab/
 ├── references/qmt-research-patterns.md
 ├── scripts/validate_qmt_strategy.py
 ├── scripts/run_batch_research.py
+├── scripts/pure_code_research.py
 ├── examples/qmt_*_live.py
 ├── examples/qmt_backtest_research.py
 ├── examples/etf_universe.json

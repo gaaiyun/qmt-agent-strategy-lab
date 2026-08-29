@@ -9,10 +9,67 @@ import datetime as _datetime
 import math
 import os
 import struct
+from dataclasses import dataclass
 
 
 RECORD_SIZE = 64
 HEADER_SIZE = 8
+
+
+@dataclass(frozen=True)
+class TransactionCosts:
+    """Explicit, auditable transaction-cost assumptions.
+
+    ``commission_rate`` applies to both buys and sells.  ``stamp_duty_rate``
+    applies to sells only (set it to zero for ETF research when appropriate).
+    The model is intentionally a pure calculation: it has no broker or QMT
+    dependency and never submits an order.
+    """
+
+    commission_rate: float = 0.0003
+    slippage_rate: float = 0.0005
+    stamp_duty_rate: float = 0.0
+    transfer_fee_rate: float = 0.0
+    minimum_commission: float = 0.0
+
+    def __post_init__(self):
+        values = (
+            self.commission_rate,
+            self.slippage_rate,
+            self.stamp_duty_rate,
+            self.transfer_fee_rate,
+            self.minimum_commission,
+        )
+        if any(not math.isfinite(float(value)) or float(value) < 0 for value in values):
+            raise ValueError("transaction-cost assumptions must be finite and non-negative")
+
+    def execution_price(self, open_price, side):
+        """Return the adverse-slippage execution price for a side."""
+        price = float(open_price)
+        if not math.isfinite(price) or price <= 0:
+            raise ValueError("open price must be a positive finite number")
+        if side == "BUY":
+            return price * (1.0 + self.slippage_rate)
+        if side == "SELL":
+            return price * (1.0 - self.slippage_rate)
+        raise ValueError("side must be BUY or SELL")
+
+    def charges(self, notional, side):
+        """Return a transparent fee breakdown for one fill."""
+        value = float(notional)
+        if not math.isfinite(value) or value < 0:
+            raise ValueError("notional must be finite and non-negative")
+        if side not in ("BUY", "SELL"):
+            raise ValueError("side must be BUY or SELL")
+        commission = max(self.minimum_commission, value * self.commission_rate) if value else 0.0
+        stamp_duty = value * self.stamp_duty_rate if side == "SELL" else 0.0
+        transfer_fee = value * self.transfer_fee_rate
+        return {
+            "commission": commission,
+            "stamp_duty": stamp_duty,
+            "transfer_fee": transfer_fee,
+            "total_cost": commission + stamp_duty + transfer_fee,
+        }
 
 
 def decode_qmt_dat(blob):
@@ -283,6 +340,7 @@ def run_weighted_portfolio(
     fee_rate=0.0003,
     slippage_rate=0.0005,
     lot_size=100,
+    cost_model=None,
 ):
     """Backtest long-only target weights with next-open execution.
 
@@ -312,12 +370,21 @@ def run_weighted_portfolio(
         by_date = {row.get("date"): row for row in bars_by_symbol[symbol]}
         aligned[symbol] = [by_date[date] for date in common_dates]
 
+    costs = cost_model or TransactionCosts(
+        commission_rate=fee_rate,
+        slippage_rate=slippage_rate,
+    )
+    if not isinstance(costs, TransactionCosts):
+        raise TypeError("cost_model must be a TransactionCosts instance")
+
     cash = float(initial_capital)
     shares = {symbol: 0 for symbol in symbols}
     orders = []
     equity_curve = []
     equity_dates = []
+    positions_curve = []
     turnover_value = 0.0
+    transaction_costs = 0.0
 
     for index, date in enumerate(common_dates):
         mark = cash + sum(
@@ -326,6 +393,7 @@ def run_weighted_portfolio(
         )
         equity_curve.append(mark)
         equity_dates.append(date)
+        positions_curve.append(dict(shares))
         if index >= len(common_dates) - 1:
             continue
 
@@ -353,10 +421,16 @@ def run_weighted_portfolio(
         )
         target_shares = {}
         for symbol in symbols:
-            buy_price = raw_opens[symbol] * (1.0 + slippage_rate)
+            buy_price = costs.execution_price(raw_opens[symbol], "BUY")
             budget = pretrade_equity * weights.get(symbol, 0.0)
+            # Include all buy-side charges in affordability.  A minimum
+            # commission is fixed per order and therefore conservatively
+            # reserved before rounding to whole lots.
+            unit_cost = buy_price * (1.0 + costs.commission_rate + costs.transfer_fee_rate)
+            if costs.minimum_commission > 0:
+                unit_cost += costs.minimum_commission / max(lot_size, 1)
             target_shares[symbol] = int(
-                budget / (buy_price * (1.0 + fee_rate)) / lot_size
+                budget / unit_cost / lot_size
             ) * lot_size
 
         for symbol in symbols:
@@ -364,11 +438,14 @@ def run_weighted_portfolio(
             if difference >= 0:
                 continue
             quantity = -difference
-            execution_price = raw_opens[symbol] * (1.0 - slippage_rate)
-            proceeds = quantity * execution_price * (1.0 - fee_rate)
+            execution_price = costs.execution_price(raw_opens[symbol], "SELL")
+            notional = quantity * execution_price
+            charge = costs.charges(notional, "SELL")
+            proceeds = notional - charge["total_cost"]
             cash += proceeds
             shares[symbol] -= quantity
-            turnover_value += quantity * execution_price
+            turnover_value += notional
+            transaction_costs += charge["total_cost"]
             orders.append(
                 {
                     "date": aligned[symbol][next_index].get("date", str(next_index)),
@@ -376,6 +453,8 @@ def run_weighted_portfolio(
                     "side": "SELL",
                     "shares": quantity,
                     "price": execution_price,
+                    "notional": notional,
+                    **charge,
                 }
             )
 
@@ -386,15 +465,18 @@ def run_weighted_portfolio(
                 buy_candidates.append((weights.get(symbol, 0.0), symbol, difference))
         buy_candidates.sort(reverse=True)
         for _, symbol, requested_quantity in buy_candidates:
-            execution_price = raw_opens[symbol] * (1.0 + slippage_rate)
-            unit_cost = execution_price * (1.0 + fee_rate)
+            execution_price = costs.execution_price(raw_opens[symbol], "BUY")
+            unit_cost = execution_price * (1.0 + costs.commission_rate + costs.transfer_fee_rate)
             affordable = int(cash / unit_cost / lot_size) * lot_size
             quantity = min(requested_quantity, affordable)
             if quantity <= 0:
                 continue
-            cash -= quantity * unit_cost
+            notional = quantity * execution_price
+            charge = costs.charges(notional, "BUY")
+            cash -= notional + charge["total_cost"]
             shares[symbol] += quantity
-            turnover_value += quantity * execution_price
+            turnover_value += notional
+            transaction_costs += charge["total_cost"]
             orders.append(
                 {
                     "date": aligned[symbol][next_index].get("date", str(next_index)),
@@ -402,6 +484,8 @@ def run_weighted_portfolio(
                     "side": "BUY",
                     "shares": quantity,
                     "price": execution_price,
+                    "notional": notional,
+                    **charge,
                 }
             )
 
@@ -421,8 +505,17 @@ def run_weighted_portfolio(
         "trades": orders,
         "turnover_value": turnover_value,
         "turnover_ratio": turnover_value / float(initial_capital),
+        "transaction_costs": transaction_costs,
+        "cost_model": {
+            "commission_rate": costs.commission_rate,
+            "slippage_rate": costs.slippage_rate,
+            "stamp_duty_rate": costs.stamp_duty_rate,
+            "transfer_fee_rate": costs.transfer_fee_rate,
+            "minimum_commission": costs.minimum_commission,
+        },
         "equity_curve": full_curve,
         "equity_dates": equity_dates,
+        "positions_curve": positions_curve,
         "metrics": performance_metrics(full_curve),
     }
     result["metrics"]["turnover_ratio"] = result["turnover_ratio"]
