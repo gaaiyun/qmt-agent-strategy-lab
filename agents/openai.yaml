@@ -1,0 +1,10 @@
+interface:
+  display_name: "QMT Agent Strategy Lab"
+  short_description: "可审计的 QMT 策略研究、回测与安全部署"
+  icon_small: "./assets/qmt-agent-strategy-lab-logo.svg"
+  icon_large: "./assets/qmt-agent-strategy-lab-logo.svg"
+  brand_color: "#19A974"
+  default_prompt: "Use $qmt-agent-strategy-lab to research, validate, and backtest a guarded QMT ETF or multifactor strategy."
+
+policy:
+  allow_implicit_invocation: true

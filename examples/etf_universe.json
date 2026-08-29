@@ -1,0 +1,49 @@
+{
+  "version": "2026-08-29",
+  "purpose": "research universe; not a buy list",
+  "defensive": [
+    {"symbol": "511010.SH", "name": "国债ETF", "sleeve": "defensive"},
+    {"symbol": "511260.SH", "name": "十年国债ETF", "sleeve": "defensive_optional"}
+  ],
+  "core": [
+    {"symbol": "510300.SH", "name": "沪深300ETF", "sleeve": "broad"},
+    {"symbol": "510500.SH", "name": "中证500ETF", "sleeve": "broad"},
+    {"symbol": "159915.SZ", "name": "创业板ETF", "sleeve": "growth"},
+    {"symbol": "512100.SH", "name": "中证1000ETF", "sleeve": "small_cap"},
+    {"symbol": "588000.SH", "name": "科创50ETF", "sleeve": "innovation"},
+    {"symbol": "512890.SH", "name": "红利低波ETF", "sleeve": "style"}
+  ],
+  "industry": [
+    {"symbol": "512480.SH", "name": "半导体ETF", "sleeve": "technology"},
+    {"symbol": "512930.SH", "name": "AIETF", "sleeve": "technology"},
+    {"symbol": "515230.SH", "name": "软件ETF", "sleeve": "technology"},
+    {"symbol": "512170.SH", "name": "医疗ETF", "sleeve": "healthcare"},
+    {"symbol": "159928.SZ", "name": "消费ETF", "sleeve": "consumer"},
+    {"symbol": "512800.SH", "name": "银行ETF", "sleeve": "finance"},
+    {"symbol": "512880.SH", "name": "证券ETF", "sleeve": "finance"},
+    {"symbol": "512400.SH", "name": "有色金属ETF", "sleeve": "cyclical"},
+    {"symbol": "515220.SH", "name": "煤炭ETF", "sleeve": "cyclical"},
+    {"symbol": "515790.SH", "name": "光伏ETF", "sleeve": "industrial"},
+    {"symbol": "512660.SH", "name": "军工ETF", "sleeve": "industrial"}
+  ],
+  "diversifiers": [
+    {"symbol": "513100.SH", "name": "纳指ETF", "sleeve": "overseas"},
+    {"symbol": "513500.SH", "name": "标普500ETF", "sleeve": "overseas"},
+    {"symbol": "513050.SH", "name": "中概互联网ETF", "sleeve": "overseas"},
+    {"symbol": "518880.SH", "name": "黄金ETF", "sleeve": "commodity"}
+  ],
+  "selection_rules": {
+    "representative_per_sleeve": true,
+    "min_listing_days": 252,
+    "min_median_amount_cny": 10000000,
+    "max_missing_rate": 0.01,
+    "max_zero_volume_days": 5,
+    "correlation_cap": 0.9,
+    "require_qmt_symbol_check": true,
+    "fallback_to_defensive_when_no_candidate": true
+  },
+  "source_notes": [
+    "代码/名称需在 QMT 本地行情与交易权限中二次核对；公开交易所名单只是候选池证据。",
+    "行业 ETF 不等于行业推荐；轮动模型输出的是风险预算后的组合权重。"
+  ]
+}

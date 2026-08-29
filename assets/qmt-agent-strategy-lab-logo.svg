@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="240" viewBox="0 0 720 240" role="img" aria-labelledby="title desc">
+  <title id="title">QMT Agent Strategy Lab</title>
+  <desc id="desc">A shield, chart and circuit mark for guarded quantitative research.</desc>
+  <rect width="720" height="240" rx="32" fill="#102a43"/>
+  <path d="M120 34l62 22v55c0 45-29 75-62 94-33-19-62-49-62-94V56z" fill="#19a974"/>
+  <path d="M91 111l22 22 43-49" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M258 162V92m0 70h98M276 137l20-26 25 15 28-41" fill="none" stroke="#69d2e7" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="276" cy="137" r="7" fill="#fff"/><circle cx="296" cy="111" r="7" fill="#fff"/><circle cx="321" cy="126" r="7" fill="#fff"/><circle cx="349" cy="85" r="7" fill="#fff"/>
+  <text x="390" y="110" fill="#fff" font-family="Segoe UI,Arial,sans-serif" font-size="34" font-weight="700">QMT Agent</text>
+  <text x="390" y="151" fill="#b9e6f2" font-family="Segoe UI,Arial,sans-serif" font-size="27">Strategy Lab</text>
+</svg>

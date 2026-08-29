@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+out/
+outputs/
+*.jsonl
+*.csv
+*.parquet
+*cache*.json
+*.log
+.env
+.env.*
