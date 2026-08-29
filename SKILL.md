@@ -64,6 +64,8 @@ python scripts/validate_qmt_strategy.py path\to\strategy.py --json-out outputs\v
 
 检查失败时先修复，不进入 UI。代理回测至少输出累计收益、年化收益、最大回撤、波动率、Sharpe、换手/交易次数、基准差额和每个 OOS fold。任何“最佳参数”都要同时展示全样本、训练集、验证集和 OOS，避免把单次优化结果当成稳健结论。
 
+对于多个 ETF 行业/风格候选，优先使用 `scripts/run_batch_research.py`（若已安装）做纯代码并行研究；它从脱敏 OHLCV cache 读取数据，跑多个信号周期和滚动窗口，按训练/验证选参并锁定 OOS。`examples/etf_universe.json` 只提供候选代码与筛选阈值，必须在 QMT 本地再次核对上市、流动性、权限和数据覆盖。批量结果中的 `orders_sent=false` 是硬性证据字段。
+
 ### 5. QMT 客户端验收
 
 通过 Computer Use 时遵循“一次观察 → 一次动作 → 刷新观察”。只操作策略导入、编辑、编译、回测和停止；不输入凭据，不点击买卖/撤单。记录可见证据：策略树名称、编译结果、基准、回测是否触发、结果窗口/日志是否出现。没有 QMT 原生收益面板时，报告必须写“原生统计未确认”，并链接到代理回测报告。只有券商 QMT 模拟账户的原生成交、净值和回撤证据才算“QMT 模拟盘验证”；内存模拟和 fake SDK 只证明管线。
