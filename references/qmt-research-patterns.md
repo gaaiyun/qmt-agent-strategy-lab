@@ -24,6 +24,16 @@
 - [zhangsensen ETF rotation](https://github.com/zhangsensen/ETF%E8%BD%AE%E5%8A%A8%E7%AD%96%E7%95%A5)：展示使用 QMT 数据的 ETF 轮动思路；只借鉴“信号与执行分离”，不复制未经验证的参数。
 - [Liu-Song-DTC/miniQMT](https://github.com/Liu-Song-DTC/miniQMT)：生产实现强调成交回报、启动对账、FIFO 账本、委托超时、停牌/涨跌停防护和自动交易总开关。我们把“委托已提交”和“成交已确认”分开，重启后以账户查询重建状态。
 
+## 下一轮注册策略基线（不代表已验证盈利）
+
+经过本轮多 agent 复核，建议按以下顺序做纯代码验证，禁止用最终 OOS 选参：
+
+1. **ETF_MOM_TREND_DEFENSIVE**：月末收盘信号、次日开盘执行；跳过最近 21 个交易日的 6/12 个月风险调整动量，风险 ETF 取 Top 3，绝对动量不过零转货币/短债 ETF；逆波动权重，单 ETF 40% 上限，年化波动目标 12%，单边换手上限 25%。股票 ETF 主规则按 T+1，T+0 仅由 point-in-time 产品 registry 明确放行。
+2. **STOCK_4F_LONG_ONLY**：公告可得时点的残差动量、价值、质量、低波；月频 Top 100，行业/规模中性，单股 2%、行业 15%、总仓 100%，严格 T+1。没有公告快照、历史成分或退市状态时，该 fold 必须 `blocked`。
+3. **ETF_TREND_RISK_PARITY**：固定宽基/债券/货币 ETF 控制组，用趋势门和收缩协方差逆波动配置，区分风险控制贡献与选券贡献。
+
+统一验收：至少 10 年点时数据，252 日 warm-up，滚动 36 个月训练→12 个月验证→12 个月锁定 OOS，至少 4 个 OOS fold；压力成本后 ETF Sharpe≥0.50、股票 Sharpe≥0.40，ETF/股票 MDD≤20%/25%，至少 75% folds 跑赢现金，换手和未成交量受限。数据质量、PIT 或执行证据不满足时必须 fail-closed。
+
 ## 本地决策（借鉴 / 不借鉴）
 
 | 主题 | 借鉴 | 明确不借鉴 |
