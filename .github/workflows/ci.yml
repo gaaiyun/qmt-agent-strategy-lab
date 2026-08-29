@@ -23,4 +23,5 @@ jobs:
         shell: bash
         run: |
           python scripts/validate_qmt_strategy.py examples/qmt_etf_rotation_live.py
+          python scripts/validate_qmt_strategy.py examples/qmt_etf_mom_trend_defensive.py
           python scripts/validate_qmt_strategy.py examples/qmt_multifactor_live.py

@@ -46,6 +46,7 @@ python scripts/run_batch_research.py --cache path/to/yahoo_etf_cache.json --work
 | [`SKILL.md`](SKILL.md) | Agent 路由、工作流和订单安全边界 | 规则本身不验证平台运行 |
 | [`references/qmt-research-patterns.md`](references/qmt-research-patterns.md) | 官方接口与公开项目的调研摘要 | 版本和券商实现可能变化 |
 | [`examples/qmt_etf_rotation_live.py`](examples/qmt_etf_rotation_live.py) | 风险 ETF/防守腿轮动模板 | 必须在本机 QMT 编译、回测 |
+| [`examples/qmt_etf_mom_trend_defensive.py`](examples/qmt_etf_mom_trend_defensive.py) | 月频 6/12 个月动量 + 趋势门 + 防守腿基线 | 研究候选；必须先过数据质量和滚动 OOS |
 | [`examples/qmt_multifactor_live.py`](examples/qmt_multifactor_live.py) | ETF 横截面量价多因子模板 | 不是股票基本面多因子；数据字段可得性需确认 |
 | [`scripts/run_batch_research.py`](scripts/run_batch_research.py) | 纯代码、进程并行、多周期研究 | 代理成交模型，不是券商成交 |
 | [`scripts/pure_code_research.py`](scripts/pure_code_research.py) | 严格数据质量、滚动 walk-forward、成本/基准/市场状态和 survivorship 证据 | 缺少点时数据或 OHLC 异常时会 fail-closed |
@@ -109,6 +110,7 @@ qmt-agent-strategy-lab/
 ├── scripts/validate_qmt_strategy.py
 ├── scripts/run_batch_research.py
 ├── scripts/pure_code_research.py
+├── examples/qmt_etf_mom_trend_defensive.py
 ├── examples/qmt_*_live.py
 ├── examples/qmt_backtest_research.py
 ├── examples/etf_universe.json
