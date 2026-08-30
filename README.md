@@ -31,6 +31,22 @@ python --version  # Python 3.9+
 python scripts/validate_qmt_strategy.py examples/qmt_etf_rotation_live.py --json-out out/validation.json
 ```
 
+汇总一次 QMT 原生验收的源码、部署副本、日志和截图证据（只读，不导入 QMT，
+不调用交易接口）：
+
+```powershell
+python scripts/build_qmt_native_manifest.py `
+  --config path/to/manifest-config.json `
+  --source-root path/to/source `
+  --deployment-root path/to/qmt-models `
+  --log-dir path/to/qmt-logs `
+  --json-out out/native-manifest.json `
+  --markdown-out out/native-manifest.md
+```
+
+公开分享前只使用工具生成的脱敏产物；`PASSORDER` 日志只证明函数调用出现，不能证明
+委托受理或成交。检测到 `BACKTEST` 以外的账户订单行为时，安全状态会直接失败。
+
 运行本地并行研究（需要一个包含日期、OHLCV 的 JSON cache；不包含账户信息）：
 
 ```powershell
@@ -51,6 +67,7 @@ python scripts/run_batch_research.py --cache path/to/yahoo_etf_cache.json --work
 | [`scripts/run_batch_research.py`](scripts/run_batch_research.py) | 纯代码、进程并行、多周期研究 | 代理成交模型，不是券商成交 |
 | [`scripts/pure_code_research.py`](scripts/pure_code_research.py) | 严格数据质量、滚动 walk-forward、成本/基准/市场状态和 survivorship 证据 | 缺少点时数据或 OHLC 异常时会 fail-closed |
 | [`scripts/validate_qmt_strategy.py`](scripts/validate_qmt_strategy.py) | AST 语法、入口、订单门控和 quickTrade 检查 | 不能证明没有未来数据或能够成交 |
+| [`scripts/build_qmt_native_manifest.py`](scripts/build_qmt_native_manifest.py) | 汇总源码/部署哈希、QMT 日志、validation 和截图并生成脱敏 manifest | `PASSORDER` 仅是调用证据；没有绩效面板时版本闭环仍不完整 |
 | [`examples/etf_universe.json`](examples/etf_universe.json) | broad/style/industry/overseas/commodity 候选池 | 代码、权限、流动性必须在 QMT 中二次核对 |
 
 ## ETF 行业池与使用方式
@@ -108,6 +125,7 @@ qmt-agent-strategy-lab/
 ├── agents/openai.yaml
 ├── references/qmt-research-patterns.md
 ├── scripts/validate_qmt_strategy.py
+├── scripts/build_qmt_native_manifest.py
 ├── scripts/run_batch_research.py
 ├── scripts/pure_code_research.py
 ├── examples/qmt_etf_mom_trend_defensive.py

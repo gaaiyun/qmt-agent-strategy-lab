@@ -86,3 +86,8 @@ python scripts/validate_qmt_strategy.py path\to\strategy.py --json-out outputs\v
 
 - `references/qmt-research-patterns.md`：官方接口和 AI+QMT 项目调研摘要、可借鉴模式及本地决策。
 - `scripts/validate_qmt_strategy.py`：无网络、可重复的 QMT 策略护栏和语法检查器。
+- `scripts/build_qmt_native_manifest.py`：只读汇总源码/部署哈希、策略参数、QMT reqid、
+  universe 数、历史回测虚拟委托、validation 和截图；写盘前默认把路径/reqid 转为
+  evidence id，并掩码账户、移除凭据字段。任何非 `BACKTEST` 账户订单行为都会使安全
+  状态失败。`PASSORDER` 只表示观察到函数调用，不表示委托已受理或成交。该工具不导入
+  QMT/XtQuant，也不调用交易接口。
